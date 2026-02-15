@@ -10,12 +10,14 @@ export default async function handler(req, res) {
 
     // body من المتصفح عادة يكون object جاهز
     const payload = req.body || {};
+payload.action = "submit";
 
-    const r = await fetch(`${GAS}?action=submit&t=${Date.now()}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+const r = await fetch(`${GAS}?action=submit&t=${Date.now()}`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(payload),
+});
+
 
     const text = await r.text();
 
