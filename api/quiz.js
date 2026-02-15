@@ -1,6 +1,6 @@
 export default async function handler(req, res) {
   try {
-    const GAS = "ضع_رابط_exec_حقك_هنا"; // نفس رابطك الحالي /exec
+    const GAS = https://script.google.com/macros/s/AKfycbyPewcvtSvG5vl3lsjWe-M8PYhRqUg-DZ2wcvEcJLiapuaxHie8Q0dUdvMiS3FXoszu/exec
     const url = `${GAS}?action=quiz&t=${Date.now()}`;
 
     const r = await fetch(url, {
