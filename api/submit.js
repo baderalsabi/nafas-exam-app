@@ -1,18 +1,14 @@
 export default async function handler(req, res) {
   try {
-    if (req.method !== "POST") {
-      return res.status(405).json({ ok:false, message:"Method not allowed" });
-    }
+    const GAS = "ضع_رابط_exec_حقك_هنا";
 
-    const GAS = "https://script.google.com/macros/s/AKfycbyPewcvtSvG5vl3lsjWe-M8PYhRqUg-DZ2wcvEcJLiapuaxHie8Q0dUdvMiS3FXoszu/exec";
+    const url = `${GAS}?t=${Date.now()}`;
 
-    const payload = req.body || {};
-    payload.action = "submit";
-
-    const r = await fetch(GAS, {
+    const r = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      cache: "no-store",
+      headers: { "Content-Type": "application/json", "Cache-Control": "no-cache" },
+      body: JSON.stringify(req.body || {}),
     });
 
     const text = await r.text();
@@ -20,8 +16,12 @@ export default async function handler(req, res) {
     try { data = JSON.parse(text); } catch { data = { ok:false, message:text }; }
 
     res.setHeader("Content-Type", "application/json; charset=utf-8");
-    return res.status(200).send(JSON.stringify(data));
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
+    res.status(200).send(JSON.stringify(data));
   } catch (e) {
-    return res.status(500).json({ ok:false, message: String(e?.message || e) });
+    res.setHeader("Cache-Control", "no-store");
+    res.status(500).json({ ok:false, message: String(e?.message || e) });
   }
 }
