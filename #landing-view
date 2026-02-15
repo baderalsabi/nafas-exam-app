@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>اختبار نافس</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand">اختبار نافس</div>
+    <a class="smalllink" href="#landing-view" id="linkHome">الرئيسية</a>
+  </div>
+
+  <main class="container">
+
+    <!-- Landing -->
+    <section id="landing-view" class="card">
+      <h1 class="h1">ابدأ الاختبار</h1>
+      <p class="muted">
+        إذا ظهرت عبارة “جارٍ التحميل…” لفترة طويلة، حدّث الصفحة مرة واحدة.
+      </p>
+
+      <div class="grid2">
+        <div>
+          <label>رقم الطالب</label>
+          <input id="studentId" inputmode="numeric" placeholder="مثال: 12345">
+        </div>
+        <div>
+          <label>اسم الطالب</label>
+          <input id="studentName" placeholder="اكتب اسمك الثلاثي">
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="btnStart" class="btn">ابدأ</button>
+        <button id="btnReload" class="btn ghost" type="button">تحديث</button>
+      </div>
+
+      <div id="landingMsg" class="msg"></div>
+    </section>
+
+    <!-- Exam -->
+    <section id="exam-view" class="card hidden">
+      <div class="headrow">
+        <div>
+          <h2 class="h2" id="subject">اختبار</h2>
+          <div class="muted" id="meta">جارٍ التحميل…</div>
+        </div>
+        <div class="actions">
+          <button id="btnReset" class="btn ghost" type="button">مسح الاختيارات</button>
+          <button id="btnPrint" class="btn ghost" type="button">🖨️ طباعة</button>
+        </div>
+      </div>
+
+      <div id="questions" class="qwrap"></div>
+
+      <div class="actions">
+        <button id="btnSubmit" class="btn">إرسال الإجابات</button>
+        <span class="muted" id="hint"></span>
+      </div>
+
+      <div id="loading" class="loading hidden">⏳ جارٍ الإرسال والتصحيح…</div>
+      <div id="result" class="result hidden"></div>
+    </section>
+
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>
