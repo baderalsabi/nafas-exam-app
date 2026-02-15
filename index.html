@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>اختبار نافس</title>
-  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
   <div class="topbar">
@@ -14,7 +14,6 @@
 
   <main class="container">
 
-    <!-- Landing -->
     <section id="landing-view" class="card">
       <h1 class="h1">ابدأ الاختبار</h1>
       <p class="muted">
@@ -40,19 +39,17 @@
       <div id="landingMsg" class="msg"></div>
     </section>
 
-    <!-- Exam -->
     <section id="exam-view" class="card hidden">
-      <div class="headrow">
-        <div>
-          <h2 class="h2" id="subject">اختبار</h2>
-          <div class="muted" id="meta">جارٍ التحميل…</div>
-        </div>
+      <div>
+        <h2 class="h2" id="subject">اختبار</h2>
+        <div class="muted" id="meta">جارٍ التحميل…</div>
       </div>
 
       <div id="questions" class="qwrap"></div>
 
-      <div class="actions" style="margin-top:16px;">
+      <div class="actions">
         <button id="btnSubmit" class="btn">إرسال الإجابات</button>
+        <span class="muted" id="hint"></span>
       </div>
 
       <div id="loading" class="loading hidden">⏳ جارٍ الإرسال والتصحيح…</div>
@@ -61,6 +58,6 @@
 
   </main>
 
-  <script src="./app.js?v=2"></script>
+  <script src="/app.js"></script>
 </body>
 </html>
