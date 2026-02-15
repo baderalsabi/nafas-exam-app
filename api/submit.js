@@ -8,7 +8,7 @@ export default async function handler(req, res) {
       method: "POST",
       cache: "no-store",
       headers: { "Content-Type": "application/json", "Cache-Control": "no-cache" },
-      body: JSON.stringify(req.body || {}),
+      body: JSON.stringify({ action: "submit", ...(req.body || {}) }),
     });
 
     const text = await r.text();
