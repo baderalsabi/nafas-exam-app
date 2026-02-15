@@ -183,10 +183,20 @@ async function submit(){
   async function attemptSend(){
     try{
       const r = await fetch(API_SUBMIT, {
-        method: "POST",
-        headers: { "Content-Type":"application/json" },
-        body: JSON.stringify({ action:"submit", payload })
-      });
+  method: "POST",
+  headers: { 
+    "Content-Type": "application/json",
+    "Cache-Control": "no-cache"
+  },
+  cache: "no-store",
+  body: JSON.stringify({
+    action: "submit",
+    studentId: el("studentId").value.trim(),
+    studentName: el("studentName").value.trim(),
+    answers: answers
+  })
+});
+
       const res = await r.json();
 
       if (res && res.retry && retryCount < 3){
