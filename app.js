@@ -190,12 +190,21 @@ async function submit(){
   },
   cache: "no-store",
   body: JSON.stringify({
-    action: "submit",
+  action: "submit",
+
+  // ✅ Top-level (المهم)
+  studentId: el("studentId").value.trim(),
+  studentName: el("studentName").value.trim(),
+  answers: answers,
+
+  // ✅ واحتياطًا داخل payload كمان
+  payload: {
     studentId: el("studentId").value.trim(),
     studentName: el("studentName").value.trim(),
     answers: answers
-  })
-});
+  }
+})
+
 
       const res = await r.json();
 
