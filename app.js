@@ -104,8 +104,14 @@ function renderQuiz(quiz){
     (quiz.questions || []).forEach((q, i) => wrap.appendChild(buildQuestionCard(q, i)));
   }
 
+  // ✅ إجبار تفعيل زر الإرسال + إزالة أي خصائص تمنع الضغط
   const btnSubmit = el("btnSubmit");
-  if (btnSubmit) btnSubmit.disabled = false;
+  if (btnSubmit){
+    btnSubmit.disabled = false;
+    btnSubmit.removeAttribute("disabled");
+    btnSubmit.style.pointerEvents = "auto";
+    btnSubmit.style.opacity = "1";
+  }
 
   const hint = el("hint");
   if (hint) hint.textContent = "";
