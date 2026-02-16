@@ -6,17 +6,13 @@ const API_QUIZ = "/api/quiz";
 const API_SUBMIT = "/api/submit";
 
 function el(id){ return document.getElementById(id); }
-function show(id){ const x = el(id); if (x) x.classList.remove("hidden"); }
-function hide(id){ const x = el(id); if (x) x.classList.add("hidden"); }
+function show(id){ el(id).classList.remove("hidden"); }
+function hide(id){ el(id).classList.add("hidden"); }
 
-function setLandingMsg(t){
-  const x = el("landingMsg");
-  if (x) x.textContent = t || "";
-}
+function setLandingMsg(t){ el("landingMsg").textContent = t || ""; }
 
 function setResult(html){
   const box = el("result");
-  if (!box) return;
   box.innerHTML = html;
   box.classList.remove("hidden");
   box.scrollIntoView({behavior:"smooth", block:"center"});
@@ -51,13 +47,11 @@ function buildQuestionCard(q, index){
 
   const img = document.createElement("img");
   img.className = "qimg";
- if (q.imageUrl){
-  const img = document.createElement("img");
-  img.className = "qimg";
-  img.src = q.imageUrl;
+  if (q.imageUrl){
+    img.src = q.imageUrl;
+    img.style.display = "block";
+  }
   qbody.appendChild(img);
-}
-
 
   const options = document.createElement("div");
   options.className = "options";
@@ -92,30 +86,15 @@ function buildQuestionCard(q, index){
 
 function renderQuiz(quiz){
   QUIZ = quiz;
-
-  const subjectEl = el("subject");
-  const metaEl = el("meta");
-  if (subjectEl) subjectEl.textContent = quiz.subject || "اختبار";
-  if (metaEl) metaEl.textContent = `عدد الأسئلة: ${(quiz.questions||[]).length}`;
+  el("subject").textContent = quiz.subject || "اختبار";
+  el("meta").textContent = `عدد الأسئلة: ${quiz.questions.length}`;
 
   const wrap = el("questions");
-  if (wrap){
-    wrap.innerHTML = "";
-    (quiz.questions || []).forEach((q, i) => wrap.appendChild(buildQuestionCard(q, i)));
-  }
+  wrap.innerHTML = "";
+  quiz.questions.forEach((q, i) => wrap.appendChild(buildQuestionCard(q, i)));
 
-  // ✅ إجبار تفعيل زر الإرسال + إزالة أي خصائص تمنع الضغط
-  const btnSubmit = el("btnSubmit");
-  if (btnSubmit){
-    btnSubmit.disabled = false;
-    btnSubmit.removeAttribute("disabled");
-    btnSubmit.style.pointerEvents = "auto";
-    btnSubmit.style.opacity = "1";
-  }
-
-  const hint = el("hint");
-  if (hint) hint.textContent = "";
-
+  el("btnSubmit").disabled = false;
+  el("hint").textContent = "";
   hide("loading");
   hide("result");
 
@@ -126,26 +105,16 @@ function renderQuiz(quiz){
 function collectAnswers(){
   if (!QUIZ) return [];
   const answers = [];
-  for (let i = 0; i < (QUIZ.questions||[]).length; i++){
+  for (let i=0; i<QUIZ.questions.length; i++){
     const sel = document.querySelector(`input[name="q_${i}"]:checked`);
     answers.push(sel ? sel.value : "");
   }
   return answers;
 }
 
-
-function resetSelections(){
-  document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
-  hide("result");
-  const hint = el("hint");
-  if (hint) hint.textContent = "";
-}
-
 function validateLanding(){
-  const idEl = el("studentId");
-  const nameEl = el("studentName");
-  const id = idEl ? idEl.value.trim() : "";
-  const name = nameEl ? nameEl.value.trim() : "";
+  const id = el("studentId").value.trim();
+  const name = el("studentName").value.trim();
   if (!id) return "رقم الطالب مطلوب.";
   if (!name) return "اسم الطالب مطلوب.";
   return "";
@@ -154,7 +123,7 @@ function validateLanding(){
 async function loadQuiz(){
   setLandingMsg("جارٍ تحميل الأسئلة…");
   try{
-    const r = await fetch(API_QUIZ, { method:"GET", cache:"no-store" });
+    const r = await fetch(`${API_QUIZ}?t=${Date.now()}`, { method:"GET", cache:"no-store" });
     const data = await r.json();
 
     if (!data || !data.ok) {
@@ -162,8 +131,7 @@ async function loadQuiz(){
       return;
     }
 
-    // بعض النسخ ترجع quiz مباشرة وبعضها داخل data
-    const quiz = data.data || data.quiz || data || {};
+    const quiz = data.data || data; // احتياط
     if (!quiz.questions || !quiz.questions.length) {
       setLandingMsg("لا توجد أسئلة الآن. تأكد من اختيار النموذج ووضع المفتاح.");
       return;
@@ -179,60 +147,33 @@ async function loadQuiz(){
 
 async function submit(){
   const err = validateLanding();
-  if (err){
-    setLandingMsg("❌ " + err);
-    return;
-  }
-
-  if (!QUIZ){
-    setLandingMsg("جارٍ التحميل… اضغط تحديث إذا تأخر.");
-    return;
-  }
-
+  if (err){ setLandingMsg("❌ " + err); return; }
+  if (!QUIZ){ setLandingMsg("جارٍ التحميل… اضغط تحديث إذا تأخر."); return; }
   if (isSubmitting) return;
+
   isSubmitting = true;
   retryCount = 0;
 
-  const answersDetailed = collectAnswersDetailed();
-const answers = answersDetailed.map(x => x.answer); // احتفاظًا بشكل قديم إن احتجته
+  const answers = collectAnswers();
+  const answeredCount = answers.filter(a => a).length;
 
-
-  const hint = el("hint");
-  if (hint) hint.textContent = `تمت الإجابة على ${answeredCount} من ${answers.length} سؤال.`;
-
-  const btnSubmit = el("btnSubmit");
-  if (btnSubmit) btnSubmit.disabled = true;
-
+  el("hint").textContent = `تمت الإجابة على ${answeredCount} من ${answers.length} سؤال.`;
+  el("btnSubmit").disabled = true;
   show("loading");
 
-  const studentId = el("studentId") ? el("studentId").value.trim() : "";
-  const studentName = el("studentName") ? el("studentName").value.trim() : "";
+  const payload = {
+    action: "submit",
+    studentId: el("studentId").value.trim(),
+    studentName: el("studentName").value.trim(),
+    answers
+  };
 
   async function attemptSend(){
     try{
-      const bodyObj = {
-  action: "submit",
-  studentId,
-  studentName,
-
-  // القديم (مصفوفة)
-  answers,
-
-  // الجديد (مفصل)
-  answersDetailed,
-
-  payload: { studentId, studentName, answers, answersDetailed }
-};
-
-
       const r = await fetch(API_SUBMIT, {
         method: "POST",
-        headers: {
-          "Content-Type":"application/json",
-          "Cache-Control":"no-cache"
-        },
-        cache: "no-store",
-        body: JSON.stringify(bodyObj)
+        headers: { "Content-Type":"application/json" },
+        body: JSON.stringify(payload)
       });
 
       const res = await r.json();
@@ -247,7 +188,7 @@ const answers = answersDetailed.map(x => x.answer); // احتفاظًا بشكل
 
       if (!res || !res.ok){
         setResult(res?.message || "❌ حدث خطأ غير معروف.");
-        if (btnSubmit) btnSubmit.disabled = false;
+        el("btnSubmit").disabled = false;
         isSubmitting = false;
         return;
       }
@@ -257,20 +198,13 @@ const answers = answersDetailed.map(x => x.answer); // احتفاظًا بشكل
 
       if (!isNaN(score) && !isNaN(total) && total > 0){
         const percent = Math.round((score/total)*100);
-        const gradeText =
-          percent>=90 ? "ممتاز" :
-          percent>=75 ? "جيد جدًا" :
-          percent>=60 ? "جيد" :
-          "";
-
         setResult(
           `✅ تم الاستلام بنجاح<br>
            <span style="font-size:18px">درجتك: ${score} / ${total}</span><br>
-           النسبة: ${percent}%<br>
-           <strong style="font-size:16px">${gradeText}</strong>`
+           النسبة: ${percent}%`
         );
       } else {
-        setResult(res.message || "✅ تم الاستلام.");
+        setResult("✅ تم الاستلام.");
       }
 
       isSubmitting = false;
@@ -278,7 +212,7 @@ const answers = answersDetailed.map(x => x.answer); // احتفاظًا بشكل
     }catch(e){
       hide("loading");
       setResult("❌ حدث خطأ أثناء الإرسال. جرّب مرة أخرى.");
-      if (btnSubmit) btnSubmit.disabled = false;
+      el("btnSubmit").disabled = false;
       isSubmitting = false;
     }
   }
@@ -296,35 +230,16 @@ window.addEventListener("hashchange", () => {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
-  const btnStart = el("btnStart");
-  if (btnStart){
-    btnStart.addEventListener("click", async () => {
-      const err = validateLanding();
-      if (err){ setLandingMsg("❌ " + err); return; }
-      await loadQuiz();
-    });
-  }
+  el("btnStart").addEventListener("click", async () => {
+    const err = validateLanding();
+    if (err){ setLandingMsg("❌ " + err); return; }
+    await loadQuiz();
+  });
 
-  const btnReload = el("btnReload");
-  if (btnReload) btnReload.addEventListener("click", () => location.reload());
+  el("btnReload").addEventListener("click", () => location.reload());
+  el("btnSubmit").addEventListener("click", submit);
 
-  const btnSubmit = el("btnSubmit");
-  if (btnSubmit) btnSubmit.addEventListener("click", submit);
-
-  const btnReset = el("btnReset");
-  if (btnReset) btnReset.addEventListener("click", resetSelections);
-
-  const btnPrint = el("btnPrint");
-  if (btnPrint){
-    btnPrint.addEventListener("click", () => {
-      hide("result");
-      hide("loading");
-      window.print();
-    });
-  }
-
-  const linkHome = el("linkHome");
-  if (linkHome) linkHome.addEventListener("click", () => { location.hash = "#landing-view"; });
+  el("linkHome").addEventListener("click", () => { location.hash = "#landing-view"; });
 
   if (!location.hash) location.hash = "#landing-view";
 });
