@@ -4,6 +4,10 @@ let retryCount = 0;
 
 const API_QUIZ = "/api/quiz";
 const API_SUBMIT = "/api/submit";
+function getGasParam(){
+  const p = new URLSearchParams(location.search);
+  return p.get("gas") || "";
+}
 
 // نخزن بيانات الطالب هنا فور الضغط على "ابدأ"
 let STUDENT = { id: "", name: "" };
