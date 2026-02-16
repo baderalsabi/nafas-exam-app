@@ -187,8 +187,9 @@ async function submit(){
   isSubmitting = true;
   retryCount = 0;
 
-  const answers = collectAnswers();
-  const answeredCount = answers.filter(a => a).length;
+  const answersDetailed = collectAnswersDetailed();
+const answers = answersDetailed.map(x => x.answer); // احتفاظًا بشكل قديم إن احتجته
+
 
   const hint = el("hint");
   if (hint) hint.textContent = `تمت الإجابة على ${answeredCount} من ${answers.length} سؤال.`;
