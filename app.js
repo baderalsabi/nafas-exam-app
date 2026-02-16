@@ -36,6 +36,24 @@ function escapeHtml(s){
     .replaceAll("<","&lt;")
     .replaceAll(">","&gt;");
 }
+const ENABLE_FRACTIONS = true;
+
+function formatFractionsHtml(text){
+  if (!ENABLE_FRACTIONS) return escapeHtml(text);
+  const safe = escapeHtml(text);
+
+  // 3/5 أو ٣/٥ أو □/□ … يدعم / أو \
+  return safe.replace(/([0-9٠-٩⬜□]+)\s*[\/\\]\s*([0-9٠-٩⬜□]+)/g, (m, a, b) => {
+    return `<span class="frac" aria-label="${a}/${b}">
+      <span class="top">${a}</span>
+      <span class="bar"></span>
+      <span class="bottom">${b}</span>
+    </span>`;
+  });
+}
+
+// لو تبي كسر "س 1/2" داخل نص طويل (مو شرط أرقام فقط)
+// شغّال مع: 1/2, ١/٢, 10/3
 
 function buildQuestionCard(q, index){
   const qcard = document.createElement("div");
@@ -49,7 +67,8 @@ function buildQuestionCard(q, index){
   qno.textContent = q.no ? q.no : ("س" + (index+1));
 
   const qtext = document.createElement("div");
-  qtext.innerHTML = escapeHtml(q.q || "");
+  qtext.innerHTML = formatFractionsHtml(q.q || "");
+
 
   qhead.appendChild(qno);
   qhead.appendChild(qtext);
@@ -82,7 +101,8 @@ function buildQuestionCard(q, index){
 
     const span = document.createElement("div");
     span.className = "optText";
-    span.innerHTML = escapeHtml(text);
+    span.innerHTML = formatFractionsHtml(text);
+
 
     label.appendChild(input);
     label.appendChild(span);
