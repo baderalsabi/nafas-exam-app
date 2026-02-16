@@ -2,11 +2,11 @@ let QUIZ = null;
 let isSubmitting = false;
 let retryCount = 0;
 
-// ✅ تخزين بيانات الطالب بعد الضغط على "ابدأ"
-let STUDENT = { id: "", name: "" };
-
 const API_QUIZ = "/api/quiz";
 const API_SUBMIT = "/api/submit";
+
+// نخزن بيانات الطالب هنا فور الضغط على "ابدأ"
+let STUDENT = { id: "", name: "" };
 
 function el(id){ return document.getElementById(id); }
 function show(id){ const x = el(id); if (x) x.classList.remove("hidden"); }
@@ -14,6 +14,11 @@ function hide(id){ const x = el(id); if (x) x.classList.add("hidden"); }
 
 function setLandingMsg(t){
   const x = el("landingMsg");
+  if (x) x.textContent = t || "";
+}
+
+function setHint(t){
+  const x = el("hint");
   if (x) x.textContent = t || "";
 }
 
@@ -52,14 +57,13 @@ function buildQuestionCard(q, index){
   const qbody = document.createElement("div");
   qbody.className = "qbody";
 
-  // ✅ لا ننشئ img إلا إذا فيه رابط (حتى لا تظهر صورة مكسورة)
+  const img = document.createElement("img");
+  img.className = "qimg";
   if (q.imageUrl){
-    const img = document.createElement("img");
-    img.className = "qimg";
     img.src = q.imageUrl;
     img.style.display = "block";
-    qbody.appendChild(img);
   }
+  qbody.appendChild(img);
 
   const options = document.createElement("div");
   options.className = "options";
@@ -109,11 +113,10 @@ function renderQuiz(quiz){
   const btnSubmit = el("btnSubmit");
   if (btnSubmit) btnSubmit.disabled = false;
 
-  const hint = el("hint");
-  if (hint) hint.textContent = "";
-
   hide("loading");
   hide("result");
+
+  setHint("");
 
   hide("landing-view");
   show("exam-view");
@@ -122,20 +125,24 @@ function renderQuiz(quiz){
 function collectAnswers(){
   if (!QUIZ) return [];
   const answers = [];
-  for (let i=0; i<(QUIZ.questions||[]).length; i++){
+  for (let i = 0; i < (QUIZ.questions||[]).length; i++){
     const sel = document.querySelector(`input[name="q_${i}"]:checked`);
     answers.push(sel ? sel.value : "");
   }
   return answers;
 }
 
-function validateLanding(){
+function validateLandingAndStore(){
   const idEl = el("studentId");
   const nameEl = el("studentName");
   const id = idEl ? idEl.value.trim() : "";
   const name = nameEl ? nameEl.value.trim() : "";
+
   if (!id) return "رقم الطالب مطلوب.";
   if (!name) return "اسم الطالب مطلوب.";
+
+  STUDENT.id = id;
+  STUDENT.name = name;
   return "";
 }
 
@@ -150,7 +157,7 @@ async function loadQuiz(){
       return;
     }
 
-    const quiz = data.data || data; // احتياط
+    const quiz = data.data || data.quiz || data || {};
     if (!quiz.questions || !quiz.questions.length) {
       setLandingMsg("لا توجد أسئلة الآن. تأكد من اختيار النموذج ووضع المفتاح.");
       return;
@@ -165,15 +172,12 @@ async function loadQuiz(){
 }
 
 async function submit(){
-  // ✅ لا نرجع نقرأ الحقول من صفحة البداية
-  // نستخدم STUDENT الذي خزّناه عند الضغط على "ابدأ"
-  if (!STUDENT.id || !STUDENT.name){
-    setResult("❌ رجاءً ارجع للرئيسية واكتب رقمك واسمك ثم ابدأ الاختبار.");
-    return;
-  }
+  // ✅ لا نقرأ الحقول هنا، نعتمد على STUDENT الذي خزناه وقت البداية
+  if (!STUDENT.id)   { setResult("❌ رقم الطالب مطلوب."); return; }
+  if (!STUDENT.name) { setResult("❌ اسم الطالب مطلوب."); return; }
 
   if (!QUIZ){
-    setResult("❌ لم يتم تحميل الأسئلة بعد. جرّب تحديث الصفحة.");
+    setResult("❌ لم يتم تحميل الأسئلة بعد.");
     return;
   }
 
@@ -184,27 +188,28 @@ async function submit(){
   const answers = collectAnswers();
   const answeredCount = answers.filter(a => a).length;
 
-  const hint = el("hint");
-  if (hint) hint.textContent = `تمت الإجابة على ${answeredCount} من ${answers.length} سؤال.`;
+  setHint(`تمت الإجابة على ${answeredCount} من ${answers.length} سؤال.`);
 
   const btnSubmit = el("btnSubmit");
   if (btnSubmit) btnSubmit.disabled = true;
 
   show("loading");
-
-  const payload = {
-    action: "submit",
-    studentId: STUDENT.id,
-    studentName: STUDENT.name,
-    answers
-  };
+  hide("result");
 
   async function attemptSend(){
     try{
+      const bodyObj = {
+        action: "submit",
+        studentId: STUDENT.id,
+        studentName: STUDENT.name,
+        answers
+      };
+
       const r = await fetch(API_SUBMIT, {
         method: "POST",
         headers: { "Content-Type":"application/json" },
-        body: JSON.stringify(payload)
+        cache: "no-store",
+        body: JSON.stringify(bodyObj)
       });
 
       const res = await r.json();
@@ -254,23 +259,18 @@ async function submit(){
 function goHome(){
   hide("exam-view");
   show("landing-view");
+  hide("result");
+  hide("loading");
+  setLandingMsg("");
+  setHint("");
 }
-
-window.addEventListener("hashchange", () => {
-  if (location.hash === "#landing-view") goHome();
-});
 
 document.addEventListener("DOMContentLoaded", () => {
   const btnStart = el("btnStart");
   if (btnStart){
     btnStart.addEventListener("click", async () => {
-      const err = validateLanding();
+      const err = validateLandingAndStore();
       if (err){ setLandingMsg("❌ " + err); return; }
-
-      // ✅ خزّن بيانات الطالب مرة واحدة
-      STUDENT.id = el("studentId").value.trim();
-      STUDENT.name = el("studentName").value.trim();
-
       await loadQuiz();
     });
   }
@@ -282,7 +282,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (btnSubmit) btnSubmit.addEventListener("click", submit);
 
   const linkHome = el("linkHome");
-  if (linkHome) linkHome.addEventListener("click", () => { location.hash = "#landing-view"; });
+  if (linkHome) linkHome.addEventListener("click", () => { location.hash = "#landing-view"; goHome(); });
 
   if (!location.hash) location.hash = "#landing-view";
 });
