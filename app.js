@@ -173,7 +173,9 @@ function validateLandingAndStore(){
 async function loadQuiz(){
   setLandingMsg("جارٍ تحميل الأسئلة…");
   try{
-    const r = await fetch(`${API_QUIZ}?t=${Date.now()}`, { method:"GET", cache:"no-store" });
+    const gas = getGasParam();
+const r = await fetch(`${API_QUIZ}?gas=${encodeURIComponent(gas)}&t=${Date.now()}`, { method:"GET", cache:"no-store" });
+
     const data = await r.json();
 
     if (!data || !data.ok) {
@@ -229,7 +231,9 @@ async function submit(){
         answers
       };
 
-      const r = await fetch(API_SUBMIT, {
+      const gas = getGasParam();
+const r = await fetch(`${API_SUBMIT}?gas=${encodeURIComponent(gas)}`, {
+
         method: "POST",
         headers: { "Content-Type":"application/json" },
         cache: "no-store",
