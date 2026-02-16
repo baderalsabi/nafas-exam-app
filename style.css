@@ -212,3 +212,20 @@ input:focus{ border-color:var(--primary); }
   white-space:pre-wrap;
   word-break:break-word;
 }
+.hidden { display: none !important; }
+
+#loading{
+  display: none;              /* احتياط */
+  pointer-events: none !important;
+}
+
+.actions{
+  position: relative;
+  z-index: 9999;
+}
+
+#btnSubmit{
+  position: relative;
+  z-index: 10000;
+  pointer-events: auto !important;
+}
