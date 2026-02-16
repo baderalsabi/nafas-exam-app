@@ -127,6 +127,7 @@ function collectAnswers(){
   return answers;
 }
 
+
 function resetSelections(){
   document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
   hide("result");
