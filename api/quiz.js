@@ -1,7 +1,12 @@
 export default async function handler(req, res) {
   try {
-    const GAS = "https://script.google.com/macros/s/AKfycbyPewcvtSvG5vl3lsjWe-M8PYhRqUg-DZ2wcvEcJLiapuaxHie8Q0dUdvMiS3FXoszu/exec";
-    const url = `${GAS}?action=quiz&v=${Date.now()}`;
+    const gas = (req.query.gas || "").toString().trim();
+    if (!gas) {
+      res.status(400).json({ ok: false, message: "MISSING_GAS: ضع ?gas= في رابط الموقع" });
+      return;
+    }
+
+    const url = `${gas}?action=quiz&v=${Date.now()}`;
 
     const r = await fetch(url, { method: "GET" });
     const text = await r.text();
