@@ -56,7 +56,9 @@ body{
   padding:18px;
 }
 
-.hidden{ display:none !important; }
+.hidden { display:none !important; }
+#loading { pointer-events:none; }
+
 
 .h1{ margin:0 0 8px; font-size:20px; }
 .h2{ margin:0 0 6px; font-size:18px; }
