@@ -51,11 +51,13 @@ function buildQuestionCard(q, index){
 
   const img = document.createElement("img");
   img.className = "qimg";
-  if (q.imageUrl){
-    img.src = q.imageUrl;
-    img.style.display = "block";
-  }
+ if (q.imageUrl){
+  const img = document.createElement("img");
+  img.className = "qimg";
+  img.src = q.imageUrl;
   qbody.appendChild(img);
+}
+
 
   const options = document.createElement("div");
   options.className = "options";
