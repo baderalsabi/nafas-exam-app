@@ -215,7 +215,6 @@ input:focus{ border-color:var(--primary); }
 .hidden { display: none !important; }
 
 #loading{
-  display: none;              /* احتياط */
   pointer-events: none !important;
 }
 
