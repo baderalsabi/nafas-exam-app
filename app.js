@@ -205,16 +205,19 @@ const answers = answersDetailed.map(x => x.answer); // احتفاظًا بشكل
   async function attemptSend(){
     try{
       const bodyObj = {
-        action: "submit",
+  action: "submit",
+  studentId,
+  studentName,
 
-        // ✅ Top-level
-        studentId,
-        studentName,
-        answers,
+  // القديم (مصفوفة)
+  answers,
 
-        // ✅ واحتياطًا داخل payload
-        payload: { studentId, studentName, answers }
-      };
+  // الجديد (مفصل)
+  answersDetailed,
+
+  payload: { studentId, studentName, answers, answersDetailed }
+};
+
 
       const r = await fetch(API_SUBMIT, {
         method: "POST",
