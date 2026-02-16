@@ -301,7 +301,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnReset = el("btnReset");
   if (btnReset) btnReset.addEventListener("click", resetSelections);
 
-  // لو زر الطباعة غير موجود لا نكسر الصفحة
   const btnPrint = el("btnPrint");
   if (btnPrint){
     btnPrint.addEventListener("click", () => {
@@ -315,6 +314,4 @@ document.addEventListener("DOMContentLoaded", () => {
   if (linkHome) linkHome.addEventListener("click", () => { location.hash = "#landing-view"; });
 
   if (!location.hash) location.hash = "#landing-view";
-});
-
 });
